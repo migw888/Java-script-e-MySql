@@ -1,10 +1,19 @@
 import "dotenv/config";
 import express from "express";
 import mysql from "mysql2/promise";
+import path from "path";    
+import { fileURLToPath } from "url"; 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 
 const port = 3000;
 const app = express();
 app.use(express.json());
+app.use(express.static("."));
+app.use(express.static(__dirname));
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -56,7 +65,7 @@ app.delete("/users/:id", async (req, res) => {
             [id]
         );
         
-        if(rows[0].affectedRows == 0){
+        if(result.affectedRows == 0){
             throw new Error("Erro ao deletar usuario")
         }
 
@@ -77,7 +86,7 @@ app.put("/users/:id", async (req, res) => {
         const cpf = req.body.cpf;
         const apelido = req.body.apelido ?? null;
 
-        const rows = await pool.query("UPDATEs user SET nome = ?, email = ?, apelido = ?, cpf = ?  WHERE id = ?",
+        const rows = await pool.query("UPDATE user SET nome = ?, email = ?, apelido = ?, cpf = ?  WHERE id = ?",
             [nome, email, apelido, cpf, id])
 
         res.status(200).json({ msg: "usuario atualizado" });
