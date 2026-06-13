@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import mysql from "mysql2/promise";
 
@@ -6,14 +7,14 @@ const app = express();
 app.use(express.json());
 
 const pool = mysql.createPool({
-    host: "localhost",
-    user: "root",
-    password: "1234",
-    database: "user_db",
-    port: 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    port: process.env.DB_PORT,
+    waitForConnections: process.env.DB_WFC,
+    connectionLimit: process.env.DB_CL,
+    queueLimit: process.env.DB_QUEUELIMIT
 })
 
 app.post("/users", async (req, res) => {
@@ -24,7 +25,7 @@ app.post("/users", async (req, res) => {
         const apelido = req.body.apelido ?? null;
 
         const result = await pool.query(
-            "INSERT IsNTO user (nome, email, cpf, apelido) values(?, ?, ?, ?);",
+            "INSERT INTO user (nome, email, cpf, apelido) values(?, ?, ?, ?);",
             [nome, email, cpf, apelido]
         )
 
@@ -54,6 +55,10 @@ app.delete("/users/:id", async (req, res) => {
             "DELETE FROM user WHERE id = ?",
             [id]
         );
+        
+        if(rows[0].affectedRows == 0){
+            throw new Error("Erro ao deletar usuario")
+        }
 
 
         res.status(200).json({ msg: "Usuário deletado com sucesso" });
