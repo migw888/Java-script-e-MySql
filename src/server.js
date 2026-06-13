@@ -3,9 +3,19 @@ import express from "express";
 import mysql from "mysql2/promise";
 import path from "path";    
 import { fileURLToPath } from "url"; 
+import swaggerUi from "swagger-ui-express"
+import swaggerDocument from "./doc/swagger-output.json" with {type: "json"}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const app = express();
+
+const port = 3000;
+
+app.use(express.json());
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
